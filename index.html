@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CleanWash — Minimalist Laundry Management System</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="app-container">
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand-header">
+            <div class="brand-logo">CW</div>
+            <div>
+                <div class="brand-name">CleanWash</div>
+                <div class="brand-subtitle">Laundry Manager</div>
+            </div>
+        </div>
+        <ul class="nav-list">
+            <li><a class="nav-item active" data-target="screen-dashboard"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
+            <li><a class="nav-item" data-target="screen-orders"><i data-lucide="shopping-bag"></i> Orders List</a></li>
+            <li><a class="nav-item" data-target="screen-new-order"><i data-lucide="plus-circle"></i> New Order</a></li>
+            <li><a class="nav-item" data-target="screen-customers"><i data-lucide="users"></i> Customers</a></li>
+            <li><a class="nav-item" data-target="screen-payments"><i data-lucide="credit-card"></i> Payments</a></li>
+            <li><a class="nav-item" data-target="screen-reports"><i data-lucide="bar-chart-3"></i> Analytics</a></li>
+            <li><a class="nav-item" data-target="screen-settings"><i data-lucide="settings"></i> System Settings</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <i data-lucide="store" style="width:16px;"></i> Branch: Main HQ (Cagayan)
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="main-wrapper">
+        <!-- TOP HEADER -->
+        <header class="top-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="mobile-menu-btn" id="mobile-menu-btn">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div class="header-title-area">
+                    <h1 id="page-title">Dashboard</h1>
+                    <span class="header-subtitle" id="page-subtitle">Overview of today's operational metrics</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary btn-sm" onclick="app.navigateTo('screen-new-order')">
+                    <i data-lucide="plus"></i> New Order
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTENT VIEWPORT -->
+        <main class="content-area">
+
+            <!-- 1. DASHBOARD VIEW -->
+            <section id="screen-dashboard" class="view-screen active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span>Today's Orders</span>
+                            <div class="stat-icon"><i data-lucide="shopping-bag"></i></div>
+                        </div>
+                        <div class="stat-value" id="dash-stat-today-orders">0</div>
+                        <div class="stat-footer">Walk-in & Pickups</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span>Processing</span>
+                            <div class="stat-icon"><i data-lucide="refresh-cw"></i></div>
+                        </div>
+                        <div class="stat-value" id="dash-stat-processing">0</div>
+                        <div class="stat-footer">Currently in wash/dry</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span>Ready for Release</span>
+                            <div class="stat-icon"><i data-lucide="check-circle-2"></i></div>
+                        </div>
+                        <div class="stat-value" id="dash-stat-ready">0</div>
+                        <div class="stat-footer">Awaiting pickup/delivery</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span>Today's Revenue</span>
+                            <div class="stat-icon"><i data-lucide="banknote"></i></div>
+                        </div>
+                        <div class="stat-value" id="dash-stat-revenue">₱0</div>
+                        <div class="stat-footer">Payments collected today</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Recent Orders</span>
+                        <button class="btn btn-secondary btn-sm" onclick="app.navigateTo('screen-orders')">View All</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Customer</th>
+                                    <th>Method</th>
+                                    <th>Weight</th>
+                                    <th>Total</th>
+                                    <th>Payment Status</th>
+                                    <th>Laundry Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-recent-table">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. ORDERS MANAGEMENT VIEW -->
+            <section id="screen-orders" class="view-screen">
+                <div class="toolbar">
+                    <div class="search-box">
+                        <i data-lucide="search" class="search-icon" style="width:18px;"></i>
+                        <input type="text" id="orders-search" class="form-control" placeholder="Search by order # or customer name...">
+                    </div>
+                    <div class="filter-group">
+                        <select id="orders-filter-laundry" class="form-select" style="width: 150px;">
+                            <option value="ALL">All Wash Status</option>
+                            <option value="Received">Received</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Ready">Ready</option>
+                            <option value="Released">Released</option>
+                        </select>
+                        <select id="orders-filter-payment" class="form-select" style="width: 150px;">
+                            <option value="ALL">All Payments</option>
+                            <option value="Unpaid">Unpaid</option>
+                            <option value="Partially paid">Partially Paid</option>
+                            <option value="Paid">Paid</option>
+                        </select>
+                        <select id="orders-filter-method" class="form-select" style="width: 140px;">
+                            <option value="ALL">All Methods</option>
+                            <option value="Walk-in">Walk-in</option>
+                            <option value="Pickup/Delivery">Pickup/Delivery</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Date</th>
+                                    <th>Method</th>
+                                    <th>Weight (kg)</th>
+                                    <th>Total</th>
+                                    <th>Payment</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-body">
+                                <!-- Dynamic Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. NEW ORDER FORM VIEW -->
+            <section id="screen-new-order" class="view-screen">
+                <form id="new-order-form" onsubmit="app.handleCreateOrder(event)">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+                        <div style="display: flex; flex-direction: column; gap: 20px;">
+                            <!-- Customer Info Card -->
+                            <div class="card">
+                                <div class="card-header"><span class="card-title">Customer Details</span></div>
+                                <div style="padding: 20px;">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label class="form-label">Customer Name *</label>
+                                            <input type="text" id="form-cust-name" class="form-control" required placeholder="e.g. Maria Santos">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Contact Number *</label>
+                                            <input type="tel" id="form-cust-phone" class="form-control" required placeholder="e.g. 0917 123 4567">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Service Method</label>
+                                        <select id="form-service-method" class="form-select" onchange="app.toggleAddressField()">
+                                            <option value="Walk-in">Walk-in</option>
+                                            <option value="Pickup/Delivery">Pickup / Delivery</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="address-field-group" style="display: none;">
+                                        <label class="form-label">Delivery Address</label>
+                                        <input type="text" id="form-address" class="form-control" placeholder="Street name, Barangay, City">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Laundry Details Card -->
+                            <div class="card">
+                                <div class="card-header"><span class="card-title">Laundry Calculation</span></div>
+                                <div style="padding: 20px;">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label class="form-label">Weight (Kilograms) *</label>
+                                            <input type="number" step="0.1" min="0.5" value="5.0" id="form-weight" class="form-control" required oninput="app.recalculateForm()">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Price per Kg (₱)</label>
+                                            <input type="number" id="form-price-per-kg" class="form-control" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label class="form-label">Delivery Fee (₱)</label>
+                                            <input type="number" id="form-delivery-fee" class="form-control" value="0" oninput="app.recalculateForm()">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Discount Amount (₱)</label>
+                                            <input type="number" id="form-discount" class="form-control" value="0" oninput="app.recalculateForm()">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Special Instructions / Notes</label>
+                                        <textarea id="form-notes" class="form-control" rows="2" placeholder="e.g. Separate dark colors, extra softener"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Summary Side Card -->
+                        <div>
+                            <div class="card" style="position: sticky; top: 88px;">
+                                <div class="card-header"><span class="card-title">Order Summary</span></div>
+                                <div style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                                        <span class="text-muted">Laundry Weight Fee:</span>
+                                        <span id="summary-weight-total">₱0.00</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                                        <span class="text-muted">Delivery Fee:</span>
+                                        <span id="summary-delivery-total">₱0.00</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--status-error-text);">
+                                        <span>Discount:</span>
+                                        <span id="summary-discount-total">-₱0.00</span>
+                                    </div>
+                                    <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 8px 0;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 700;">
+                                        <span>Total Amount:</span>
+                                        <span id="summary-grand-total" style="color: var(--primary-dark);">₱0.00</span>
+                                    </div>
+
+                                    <div style="margin-top: 16px;">
+                                        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Order</button>
+                                        <button type="button" class="btn btn-secondary" style="width: 100%; margin-top: 8px;" onclick="app.navigateTo('screen-orders')">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- 4. ORDER DETAILS VIEW -->
+            <section id="screen-order-details" class="view-screen">
+                <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <button class="btn btn-secondary btn-sm" onclick="app.navigateTo('screen-orders')"><i data-lucide="arrow-left"></i> Back to Orders</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary btn-sm" onclick="app.printCurrentReceipt()"><i data-lucide="printer"></i> Print Receipt</button>
+                        <button class="btn btn-primary btn-sm" onclick="app.openPaymentModalForCurrent()"><i data-lucide="dollar-sign"></i> Record Payment</button>
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 24px; margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <h2 style="font-size: 1.4rem; font-weight: 700;" id="detail-order-id">LD-XXXXX</h2>
+                            <p class="text-muted" style="font-size: 0.85rem;" id="detail-order-date">Created on Oct 24, 2026</p>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <span class="badge" id="detail-badge-laundry">Laundry Status</span>
+                            <span class="badge" id="detail-badge-payment">Payment Status</span>
+                        </div>
+                    </div>
+
+                    <!-- Progress Lifecycle Timeline -->
+                    <div class="timeline">
+                        <div class="timeline-step" id="step-received">
+                            <div class="timeline-node">1</div>
+                            <div class="timeline-label">Received</div>
+                        </div>
+                        <div class="timeline-step" id="step-processing">
+                            <div class="timeline-node">2</div>
+                            <div class="timeline-label">Processing</div>
+                        </div>
+                        <div class="timeline-step" id="step-ready">
+                            <div class="timeline-node">3</div>
+                            <div class="timeline-label">Ready</div>
+                        </div>
+                        <div class="timeline-step" id="step-released">
+                            <div class="timeline-node">4</div>
+                            <div class="timeline-label">Released</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 16px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn btn-secondary btn-sm" onclick="app.updateOrderStatus('Processing')">Mark Processing</button>
+                        <button class="btn btn-secondary btn-sm" onclick="app.updateOrderStatus('Ready')">Mark Ready</button>
+                        <button class="btn btn-secondary btn-sm" onclick="app.updateOrderStatus('Released')">Mark Released</button>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                    <!-- Customer & Method Details -->
+                    <div class="card" style="padding: 20px;">
+                        <h3 class="card-title" style="margin-bottom: 16px;">Customer & Delivery Info</h3>
+                        <p style="margin-bottom: 8px;"><strong>Name:</strong> <span id="detail-cust-name">-</span></p>
+                        <p style="margin-bottom: 8px;"><strong>Phone:</strong> <span id="detail-cust-phone">-</span></p>
+                        <p style="margin-bottom: 8px;"><strong>Service Method:</strong> <span id="detail-cust-method">-</span></p>
+                        <p style="margin-bottom: 8px;"><strong>Address:</strong> <span id="detail-cust-address">N/A</span></p>
+                        <p style="margin-bottom: 8px;"><strong>Special Notes:</strong> <span id="detail-cust-notes">None</span></p>
+                    </div>
+
+                    <!-- Financial Summary -->
+                    <div class="card" style="padding: 20px;">
+                        <h3 class="card-title" style="margin-bottom: 16px;">Financial Breakdown</h3>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>Weight Charge:</span> <span id="detail-fin-weight">₱0.00</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>Delivery Fee:</span> <span id="detail-fin-delivery">₱0.00</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--status-error-text);">
+                            <span>Discount:</span> <span id="detail-fin-discount">-₱0.00</span>
+                        </div>
+                        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 8px 0;">
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.05rem; margin-bottom: 8px;">
+                            <span>Total Amount:</span> <span id="detail-fin-total">₱0.00</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; color: var(--status-success-text); margin-bottom: 8px;">
+                            <span>Amount Paid:</span> <span id="detail-fin-paid">₱0.00</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--status-error-text);">
+                            <span>Outstanding Balance:</span> <span id="detail-fin-balance">₱0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. CUSTOMERS VIEW -->
+            <section id="screen-customers" class="view-screen">
+                <div class="toolbar">
+                    <div class="search-box">
+                        <i data-lucide="search" class="search-icon" style="width:18px;"></i>
+                        <input type="text" id="customers-search" class="form-control" placeholder="Search customer name or phone...">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Customer Name</th>
+                                    <th>Contact Phone</th>
+                                    <th>Address</th>
+                                    <th>Total Orders</th>
+                                    <th>Total Spent</th>
+                                    <th>Balance Due</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customers-table-body">
+                                <!-- Dynamic Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. PAYMENTS VIEW -->
+            <section id="screen-payments" class="view-screen">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">Total Paid</div>
+                        <div class="stat-value" id="pay-stat-collected">₱0.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">Outstanding Balance</div>
+                        <div class="stat-value" id="pay-stat-outstanding" style="color: var(--status-error-text);">₱0.00</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Payment Audit Log</span></div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date/Time</th>
+                                    <th>Order #</th>
+                                    <th>Customer</th>
+                                    <th>Amount Paid</th>
+                                    <th>Payment Method</th>
+                                    <th>Reference #</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payments-table-body">
+                                <!-- Dynamic Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. REPORTS VIEW -->
+            <section id="screen-reports" class="view-screen">
+                <div class="toolbar">
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary btn-sm" onclick="app.exportToCSV()"><i data-lucide="download"></i> Export Orders to CSV</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">Gross Order Revenue</div>
+                        <div class="stat-value" id="rep-stat-gross">₱0.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">Total Completed Orders</div>
+                        <div class="stat-value" id="rep-stat-orders">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">Avg Order Value</div>
+                        <div class="stat-value" id="rep-stat-avg">₱0.00</div>
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 24px;">
+                    <h3 class="card-title" style="margin-bottom: 16px;">Orders Breakdown by Status</h3>
+                    <div id="status-distribution-bars" style="display: flex; flex-direction: column; gap: 12px;">
+                        <!-- Dynamic Progress Bars -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 8. SETTINGS VIEW -->
+            <section id="screen-settings" class="view-screen">
+                <div class="card" style="max-width: 600px; padding: 24px;">
+                    <h3 class="card-title" style="margin-bottom: 20px;">System Configuration</h3>
+                    <form onsubmit="app.saveSettings(event)">
+                        <div class="form-group">
+                            <label class="form-label">Business Name</label>
+                            <input type="text" id="setting-biz-name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Default Price per Kg (₱)</label>
+                            <input type="number" id="setting-price-kg" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Default Delivery Fee (₱)</label>
+                            <input type="number" id="setting-delivery-fee" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Currency Symbol</label>
+                            <input type="text" value="₱ (PHP)" class="form-control" readonly disabled>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="margin-top: 12px;">Save Settings</button>
+                    </form>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<!-- RECORD PAYMENT MODAL -->
+<div class="modal-overlay" id="modal-payment">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3 style="font-size: 1.1rem; font-weight: 700;">Record Payment</h3>
+            <button class="btn btn-secondary btn-sm" onclick="app.closeModal('modal-payment')"><i data-lucide="x"></i></button>
+        </div>
+        <form onsubmit="app.handleRecordPayment(event)">
+            <div class="modal-body">
+                <input type="hidden" id="modal-pay-order-id">
+                <div style="background: var(--bg-app); padding: 12px; border-radius: var(--radius-sm); margin-bottom: 16px; font-size: 0.875rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span>Order Total:</span> <strong id="modal-pay-total">₱0.00</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: var(--status-error-text);">
+                        <span>Remaining Balance:</span> <strong id="modal-pay-balance">₱0.00</strong>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Payment Amount (₱) *</label>
+                    <input type="number" step="0.01" id="modal-pay-amount" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Payment Method *</label>
+                    <select id="modal-pay-method" class="form-select" required>
+                        <option value="Cash">Cash</option>
+                        <option value="GCash">GCash</option>
+                        <option value="Maya">Maya</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Transaction Reference # (Optional)</label>
+                    <input type="text" id="modal-pay-ref" class="form-control" placeholder="e.g. GCash Ref No. 123456">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-payment')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Submit Payment</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- PRINTABLE RECEIPT CONTAINER (HIDDEN UNTIL PRINT) -->
+<div id="printable-receipt" style="display: none;">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h2 id="receipt-biz-name">CleanWash Laundry</h2>
+        <p style="font-size: 0.8rem;">Official Customer Receipt</p>
+    </div>
+    <hr>
+    <p><strong>Order #:</strong> <span id="receipt-id"></span></p>
+    <p><strong>Customer:</strong> <span id="receipt-cust"></span></p>
+    <p><strong>Date:</strong> <span id="receipt-date"></span></p>
+    <hr>
+    <div style="margin: 12px 0;">
+        <p>Weight: <span id="receipt-weight"></span> kg</p>
+        <p>Delivery Fee: <span id="receipt-delivery"></span></p>
+        <p>Discount: <span id="receipt-discount"></span></p>
+        <p style="font-size: 1.1rem; font-weight: 700; margin-top: 8px;">Total: <span id="receipt-total"></span></p>
+        <p>Paid: <span id="receipt-paid"></span></p>
+        <p>Balance: <span id="receipt-balance"></span></p>
+    </div>
+    <hr>
+    <p style="text-align: center; font-size: 0.8rem; margin-top: 12px;">Thank you for your business!</p>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- JAVASCRIPT APPLICATION LOGIC -->
+<script>
+/**
+ * CleanWash Application State & Business Logic
+ */
+const AppState = {
+    settings: {
+        businessName: "CleanWash Laundry Services",
+        pricePerKg: 50,
+        deliveryFee: 40,
+    },
+    orders: [
+        {
+            id: "LD-20261103-001",
+            customerName: "Maria Santos",
+            customerPhone: "0917-123-4567",
+            serviceMethod: "Pickup/Delivery",
+            address: "Blk 4 Lot 12, Carmen, Cagayan de Oro",
+            weight: 5.5,
+            pricePerKg: 50,
+            deliveryFee: 40,
+            discount: 0,
+            totalAmount: 315,
+            amountPaid: 315,
+            outstandingBalance: 0,
+            laundryStatus: "Released",
+            paymentStatus: "Paid",
+            dateReceived: "2026-11-03 08:30",
+            notes: "Extra fabric softener please",
+            payments: [{ amount: 315, method: "GCash", ref: "GC-982123", date: "2026-11-03 08:35" }]
+        },
+        {
+            id: "LD-20261103-002",
+            customerName: "Juan Dela Cruz",
+            customerPhone: "0918-987-6543",
+            serviceMethod: "Walk-in",
+            address: "",
+            weight: 8.0,
+            pricePerKg: 50,
+            deliveryFee: 0,
+            discount: 20,
+            totalAmount: 380,
+            amountPaid: 200,
+            outstandingBalance: 180,
+            laundryStatus: "Processing",
+            paymentStatus: "Partially paid",
+            dateReceived: "2026-11-03 10:15",
+            notes: "Delicate clothes",
+            payments: [{ amount: 200, method: "Cash", ref: "N/A", date: "2026-11-03 10:15" }]
+        },
+        {
+            id: "LD-20261103-003",
+            customerName: "Ana Reyes",
+            customerPhone: "0922-555-0192",
+            serviceMethod: "Walk-in",
+            address: "",
+            weight: 4.0,
+            pricePerKg: 50,
+            deliveryFee: 0,
+            discount: 0,
+            totalAmount: 200,
+            amountPaid: 0,
+            outstandingBalance: 200,
+            laundryStatus: "Ready",
+            paymentStatus: "Unpaid",
+            dateReceived: "2026-11-03 11:00",
+            notes: "",
+            payments: []
+        }
+    ],
+    selectedOrderId: null
+};
+
+class LaundryApp {
+    constructor() {
+        this.initNavigation();
+        this.initEvents();
+        this.loadSettings();
+        this.renderAll();
+    }
+
+    // Navigation Handler
+    initNavigation() {
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = item.getAttribute('data-target');
+                this.navigateTo(target);
+            });
+        });
+
+        // Mobile Menu Toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('mobile-open');
+        });
+    }
+
+    navigateTo(targetScreenId) {
+        // Toggle Nav active state
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.classList.toggle('active', el.getAttribute('data-target') === targetScreenId);
+        });
+
+        // Toggle Screen active state
+        document.querySelectorAll('.view-screen').forEach(el => {
+            el.classList.toggle('active', el.id === targetScreenId);
+        });
+
+        // Update Header Titles
+        const titles = {
+            'screen-dashboard': ['Dashboard', 'Overview of today\'s operational metrics'],
+            'screen-orders': ['Orders List', 'Manage and filter customer laundry orders'],
+            'screen-new-order': ['New Order', 'Create a new walk-in or delivery order'],
+            'screen-order-details': ['Order Details', 'View lifecycle, update status & process payments'],
+            'screen-customers': ['Customer Directory', 'History and spending overview'],
+            'screen-payments': ['Payment History', 'Log of received cash and digital payments'],
+            'screen-reports': ['Business Analytics', 'Summary of revenue and throughput'],
+            'screen-settings': ['System Settings', 'Configure default rates and business details']
+        };
+
+        if (titles[targetScreenId]) {
+            document.getElementById('page-title').innerText = titles[targetScreenId][0];
+            document.getElementById('page-subtitle').innerText = titles[targetScreenId][1];
+        }
+
+        // Refresh views
+        this.renderAll();
+        document.getElementById('sidebar').classList.remove('mobile-open');
+    }
+
+    initEvents() {
+        // Order Filter Events
+        document.getElementById('orders-search').addEventListener('input', () => this.renderOrders());
+        document.getElementById('orders-filter-laundry').addEventListener('change', () => this.renderOrders());
+        document.getElementById('orders-filter-payment').addEventListener('change', () => this.renderOrders());
+        document.getElementById('orders-filter-method').addEventListener('change', () => this.renderOrders());
+
+        // Customer Search Event
+        document.getElementById('customers-search').addEventListener('input', () => this.renderCustomers());
+    }
+
+    loadSettings() {
+        document.getElementById('setting-biz-name').value = AppState.settings.businessName;
+        document.getElementById('setting-price-kg').value = AppState.settings.pricePerKg;
+        document.getElementById('setting-delivery-fee').value = AppState.settings.deliveryFee;
+
+        // Form Defaults
+        document.getElementById('form-price-per-kg').value = AppState.settings.pricePerKg;
+        document.getElementById('form-delivery-fee').value = 0;
+        this.recalculateForm();
+    }
+
+    saveSettings(e) {
+        e.preventDefault();
+        AppState.settings.businessName = document.getElementById('setting-biz-name').value;
+        AppState.settings.pricePerKg = parseFloat(document.getElementById('setting-price-kg').value) || 0;
+        AppState.settings.deliveryFee = parseFloat(document.getElementById('setting-delivery-fee').value) || 0;
+        
+        document.getElementById('form-price-per-kg').value = AppState.settings.pricePerKg;
+        this.showToast('Settings saved successfully!');
+    }
+
+    // FORM CALCULATION LOGIC
+    toggleAddressField() {
+        const method = document.getElementById('form-service-method').value;
+        const addressGroup = document.getElementById('address-field-group');
+        const deliveryFeeInput = document.getElementById('form-delivery-fee');
+
+        if (method === 'Pickup/Delivery') {
+            addressGroup.style.display = 'block';
+            deliveryFeeInput.value = AppState.settings.deliveryFee;
+        } else {
+            addressGroup.style.display = 'none';
+            deliveryFeeInput.value = 0;
+        }
+        this.recalculateForm();
+    }
+
+    recalculateForm() {
+        const weight = parseFloat(document.getElementById('form-weight').value) || 0;
+        const priceKg = parseFloat(document.getElementById('form-price-per-kg').value) || 0;
+        const deliveryFee = parseFloat(document.getElementById('form-delivery-fee').value) || 0;
+        const discount = parseFloat(document.getElementById('form-discount').value) || 0;
+
+        const weightTotal = weight * priceKg;
+        const grandTotal = Math.max(0, (weightTotal + deliveryFee) - discount);
+
+        document.getElementById('summary-weight-total').innerText = this.formatPeso(weightTotal);
+        document.getElementById('summary-delivery-total').innerText = this.formatPeso(deliveryFee);
+        document.getElementById('summary-discount-total').innerText = `-${this.formatPeso(discount)}`;
+        document.getElementById('summary-grand-total').innerText = this.formatPeso(grandTotal);
+    }
+
+    handleCreateOrder(e) {
+        e.preventDefault();
+        const weight = parseFloat(document.getElementById('form-weight').value) || 0;
+        const priceKg = parseFloat(document.getElementById('form-price-per-kg').value) || 0;
+        const deliveryFee = parseFloat(document.getElementById('form-delivery-fee').value) || 0;
+        const discount = parseFloat(document.getElementById('form-discount').value) || 0;
+        const totalAmount = Math.max(0, (weight * priceKg + deliveryFee) - discount);
+
+        const newOrder = {
+            id: `LD-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${String(AppState.orders.length + 1).padStart(3, '0')}`,
+            customerName: document.getElementById('form-cust-name').value,
+            customerPhone: document.getElementById('form-cust-phone').value,
+            serviceMethod: document.getElementById('form-service-method').value,
+            address: document.getElementById('form-address').value || 'N/A',
+            weight: weight,
+            pricePerKg: priceKg,
+            deliveryFee: deliveryFee,
+            discount: discount,
+            totalAmount: totalAmount,
+            amountPaid: 0,
+            outstandingBalance: totalAmount,
+            laundryStatus: "Received",
+            paymentStatus: "Unpaid",
+            dateReceived: new Date().toISOString().replace('T', ' ').slice(0, 16),
+            notes: document.getElementById('form-notes').value,
+            payments: []
+        };
+
+        AppState.orders.unshift(newOrder);
+        this.showToast(`Order ${newOrder.id} created!`);
+        document.getElementById('new-order-form').reset();
+        this.loadSettings();
+        this.navigateTo('screen-orders');
+    }
+
+    // DATA RENDERING
+    renderAll() {
+        this.renderDashboard();
+        this.renderOrders();
+        this.renderCustomers();
+        this.renderPayments();
+        this.renderReports();
+        if (AppState.selectedOrderId) {
+            this.renderOrderDetails(AppState.selectedOrderId);
+        }
+        lucide.createIcons();
+    }
+
+    renderDashboard() {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const todayOrders = AppState.orders.filter(o => o.dateReceived.startsWith(todayStr));
+        
+        document.getElementById('dash-stat-today-orders').innerText = todayOrders.length;
+        document.getElementById('dash-stat-processing').innerText = AppState.orders.filter(o => o.laundryStatus === 'Processing').length;
+        document.getElementById('dash-stat-ready').innerText = AppState.orders.filter(o => o.laundryStatus === 'Ready').length;
+        
+        const revToday = AppState.orders.reduce((acc, o) => {
+            return acc + o.payments.reduce((pAcc, p) => p.date.startsWith(todayStr) ? pAcc + p.amount : pAcc, 0);
+        }, 0);
+
+        document.getElementById('dash-stat-revenue').innerText = this.formatPeso(revToday);
+
+        // Recent Orders Table
+        const recentBody = document.getElementById('dash-recent-table');
+        recentBody.innerHTML = AppState.orders.slice(0, 5).map(o => `
+            <tr>
+                <td><strong>${o.id}</strong></td>
+                <td>${this.escapeHTML(o.customerName)}</td>
+                <td><span class="badge ${o.serviceMethod === 'Walk-in' ? 'badge-walkin' : 'badge-delivery'}">${o.serviceMethod}</span></td>
+                <td>${o.weight} kg</td>
+                <td>${this.formatPeso(o.totalAmount)}</td>
+                <td><span class="badge ${this.getPaymentBadgeClass(o.paymentStatus)}">${o.paymentStatus}</span></td>
+                <td><span class="badge ${this.getLaundryBadgeClass(o.laundryStatus)}">${o.laundryStatus}</span></td>
+                <td><button class="btn btn-secondary btn-sm" onclick="app.viewOrderDetails('${o.id}')">View</button></td>
+            </tr>
+        `).join('');
+    }
+
+    renderOrders() {
+        const search = document.getElementById('orders-search').value.toLowerCase();
+        const filterLaundry = document.getElementById('orders-filter-laundry').value;
+        const filterPayment = document.getElementById('orders-filter-payment').value;
+        const filterMethod = document.getElementById('orders-filter-method').value;
+
+        const filtered = AppState.orders.filter(o => {
+            const matchesSearch = o.id.toLowerCase().includes(search) || o.customerName.toLowerCase().includes(search);
+            const matchesLaundry = filterLaundry === 'ALL' || o.laundryStatus === filterLaundry;
+            const matchesPayment = filterPayment === 'ALL' || o.paymentStatus === filterPayment;
+            const matchesMethod = filterMethod === 'ALL' || o.serviceMethod === filterMethod;
+            return matchesSearch && matchesLaundry && matchesPayment && matchesMethod;
+        });
+
+        const tbody = document.getElementById('orders-table-body');
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><i data-lucide="inbox" class="empty-icon"></i><p>No orders match the selected filters.</p></div></td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(o => `
+            <tr>
+                <td><strong>${o.id}</strong></td>
+                <td>${this.escapeHTML(o.customerName)}<br><small class="text-muted">${o.customerPhone}</small></td>
+                <td>${o.dateReceived}</td>
+                <td><span class="badge ${o.serviceMethod === 'Walk-in' ? 'badge-walkin' : 'badge-delivery'}">${o.serviceMethod}</span></td>
+                <td>${o.weight} kg</td>
+                <td>${this.formatPeso(o.totalAmount)}</td>
+                <td><span class="badge ${this.getPaymentBadgeClass(o.paymentStatus)}">${o.paymentStatus}</span></td>
+                <td><span class="badge ${this.getLaundryBadgeClass(o.laundryStatus)}">${o.laundryStatus}</span></td>
+                <td><button class="btn btn-secondary btn-sm" onclick="app.viewOrderDetails('${o.id}')">Manage</button></td>
+            </tr>
+        `).join('');
+    }
+
+    viewOrderDetails(orderId) {
+        AppState.selectedOrderId = orderId;
+        this.navigateTo('screen-order-details');
+    }
+
+    renderOrderDetails(orderId) {
+        const o = AppState.orders.find(ord => ord.id === orderId);
+        if (!o) return;
+
+        document.getElementById('detail-order-id').innerText = o.id;
+        document.getElementById('detail-order-date').innerText = `Created: ${o.dateReceived}`;
+        
+        const badgeL = document.getElementById('detail-badge-laundry');
+        badgeL.className = `badge ${this.getLaundryBadgeClass(o.laundryStatus)}`;
+        badgeL.innerText = o.laundryStatus;
+
+        const badgeP = document.getElementById('detail-badge-payment');
+        badgeP.className = `badge ${this.getPaymentBadgeClass(o.paymentStatus)}`;
+        badgeP.innerText = o.paymentStatus;
+
+        // Timeline Step States
+        const steps = ['Received', 'Processing', 'Ready', 'Released'];
+        const currentIdx = steps.indexOf(o.laundryStatus);
+        
+        steps.forEach((step, idx) => {
+            const el = document.getElementById(`step-${step.toLowerCase()}`);
+            el.classList.remove('completed', 'active');
+            if (idx < currentIdx) el.classList.add('completed');
+            if (idx === currentIdx) el.classList.add('active');
+        });
+
+        // Details
+        document.getElementById('detail-cust-name').innerText = o.customerName;
+        document.getElementById('detail-cust-phone').innerText = o.customerPhone;
+        document.getElementById('detail-cust-method').innerText = o.serviceMethod;
+        document.getElementById('detail-cust-address').innerText = o.address || 'N/A';
+        document.getElementById('detail-cust-notes').innerText = o.notes || 'None';
+
+        // Financials
+        document.getElementById('detail-fin-weight').innerText = this.formatPeso(o.weight * o.pricePerKg);
+        document.getElementById('detail-fin-delivery').innerText = this.formatPeso(o.deliveryFee);
+        document.getElementById('detail-fin-discount').innerText = `-${this.formatPeso(o.discount)}`;
+        document.getElementById('detail-fin-total').innerText = this.formatPeso(o.totalAmount);
+        document.getElementById('detail-fin-paid').innerText = this.formatPeso(o.amountPaid);
+        document.getElementById('detail-fin-balance').innerText = this.formatPeso(o.outstandingBalance);
+    }
+
+    updateOrderStatus(status) {
+        if (!AppState.selectedOrderId) return;
+        const o = AppState.orders.find(ord => ord.id === AppState.selectedOrderId);
+        if (o) {
+            o.laundryStatus = status;
+            this.showToast(`Laundry status updated to ${status}`);
+            this.renderAll();
+        }
+    }
+
+    // CUSTOMER MANAGEMENT
+    renderCustomers() {
+        const search = document.getElementById('customers-search').value.toLowerCase();
+        
+        // Aggregate customer data
+        const custMap = {};
+        AppState.orders.forEach(o => {
+            if (!custMap[o.customerPhone]) {
+                custMap[o.customerPhone] = {
+                    name: o.customerName,
+                    phone: o.customerPhone,
+                    address: o.address,
+                    ordersCount: 0,
+                    totalSpent: 0,
+                    balanceDue: 0
+                };
+            }
+            custMap[o.customerPhone].ordersCount += 1;
+            custMap[o.customerPhone].totalSpent += o.amountPaid;
+            custMap[o.customerPhone].balanceDue += o.outstandingBalance;
+        });
+
+        const list = Object.values(custMap).filter(c => 
+            c.name.toLowerCase().includes(search) || c.phone.includes(search)
+        );
+
+        const tbody = document.getElementById('customers-table-body');
+        tbody.innerHTML = list.map(c => `
+            <tr>
+                <td><strong>${this.escapeHTML(c.name)}</strong></td>
+                <td>${c.phone}</td>
+                <td>${this.escapeHTML(c.address || 'N/A')}</td>
+                <td>${c.ordersCount} orders</td>
+                <td>${this.formatPeso(c.totalSpent)}</td>
+                <td style="color: ${c.balanceDue > 0 ? 'var(--status-error-text)' : 'inherit'}">${this.formatPeso(c.balanceDue)}</td>
+            </tr>
+        `).join('');
+    }
+
+    // PAYMENTS & MODALS
+    renderPayments() {
+        const allPayments = [];
+        let totalCollected = 0;
+        let totalOutstanding = 0;
+
+        AppState.orders.forEach(o => {
+            totalOutstanding += o.outstandingBalance;
+            o.payments.forEach(p => {
+                totalCollected += p.amount;
+                allPayments.push({ ...p, orderId: o.id, customerName: o.customerName });
+            });
+        });
+
+        document.getElementById('pay-stat-collected').innerText = this.formatPeso(totalCollected);
+        document.getElementById('pay-stat-outstanding').innerText = this.formatPeso(totalOutstanding);
+
+        const tbody = document.getElementById('payments-table-body');
+        tbody.innerHTML = allPayments.map(p => `
+            <tr>
+                <td>${p.date}</td>
+                <td><strong>${p.orderId}</strong></td>
+                <td>${this.escapeHTML(p.customerName)}</td>
+                <td><strong>${this.formatPeso(p.amount)}</strong></td>
+                <td>${p.method}</td>
+                <td>${p.ref}</td>
+            </tr>
+        `).join('');
+    }
+
+    openPaymentModalForCurrent() {
+        if (!AppState.selectedOrderId) return;
+        const o = AppState.orders.find(ord => ord.id === AppState.selectedOrderId);
+        if (!o) return;
+
+        if (o.outstandingBalance <= 0) {
+            this.showToast('Order is already fully paid!');
+            return;
+        }
+
+        document.getElementById('modal-pay-order-id').value = o.id;
+        document.getElementById('modal-pay-total').innerText = this.formatPeso(o.totalAmount);
+        document.getElementById('modal-pay-balance').innerText = this.formatPeso(o.outstandingBalance);
+        document.getElementById('modal-pay-amount').value = o.outstandingBalance;
+
+        this.openModal('modal-payment');
+    }
+
+    handleRecordPayment(e) {
+        e.preventDefault();
+        const orderId = document.getElementById('modal-pay-order-id').value;
+        const amount = parseFloat(document.getElementById('modal-pay-amount').value) || 0;
+        const method = document.getElementById('modal-pay-method').value;
+        const ref = document.getElementById('modal-pay-ref').value || 'N/A';
+
+        const o = AppState.orders.find(ord => ord.id === orderId);
+        if (o) {
+            if (amount > o.outstandingBalance) {
+                this.showToast('Payment exceeds remaining balance!');
+                return;
+            }
+
+            o.amountPaid += amount;
+            o.outstandingBalance -= amount;
+
+            if (o.outstandingBalance <= 0) {
+                o.paymentStatus = 'Paid';
+            } else {
+                o.paymentStatus = 'Partially paid';
+            }
+
+            o.payments.push({
+                amount: amount,
+                method: method,
+                ref: ref,
+                date: new Date().toISOString().replace('T', ' ').slice(0, 16)
+            });
+
+            this.closeModal('modal-payment');
+            this.showToast('Payment recorded successfully!');
+            this.renderAll();
+        }
+    }
+
+    // REPORTS VIEW
+    renderReports() {
+        const gross = AppState.orders.reduce((sum, o) => sum + o.totalAmount, 0);
+        const count = AppState.orders.length;
+        const avg = count > 0 ? gross / count : 0;
+
+        document.getElementById('rep-stat-gross').innerText = this.formatPeso(gross);
+        document.getElementById('rep-stat-orders').innerText = count;
+        document.getElementById('rep-stat-avg').innerText = this.formatPeso(avg);
+
+        // Status breakdown bars
+        const statuses = ['Received', 'Processing', 'Ready', 'Released'];
+        const container = document.getElementById('status-distribution-bars');
+        
+        container.innerHTML = statuses.map(st => {
+            const stCount = AppState.orders.filter(o => o.laundryStatus === st).length;
+            const pct = count > 0 ? (stCount / count) * 100 : 0;
+            return `
+                <div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+                        <span>${st}</span>
+                        <span>${stCount} (${pct.toFixed(0)}%)</span>
+                    </div>
+                    <div style="background:var(--border-color); height:8px; border-radius:4px; overflow:hidden;">
+                        <div style="background:var(--primary-sage); height:100%; width:${pct}%;"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // EXPORT TO CSV
+    exportToCSV() {
+        const headers = ["Order ID", "Customer Name", "Phone", "Method", "Weight (kg)", "Total Amount", "Amount Paid", "Laundry Status", "Payment Status", "Date"];
+        const rows = AppState.orders.map(o => [
+            o.id,
+            `"${o.customerName}"`,
+            o.customerPhone,
+            o.serviceMethod,
+            o.weight,
+            o.totalAmount,
+            o.amountPaid,
+            o.laundryStatus,
+            o.paymentStatus,
+            o.dateReceived
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `CleanWash_Orders_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // PRINT RECEIPT
+    printCurrentReceipt() {
+        if (!AppState.selectedOrderId) return;
+        const o = AppState.orders.find(ord => ord.id === AppState.selectedOrderId);
+        if (!o) return;
+
+        document.getElementById('receipt-biz-name').innerText = AppState.settings.businessName;
+        document.getElementById('receipt-id').innerText = o.id;
+        document.getElementById('receipt-cust').innerText = o.customerName;
+        document.getElementById('receipt-date').innerText = o.dateReceived;
+        document.getElementById('receipt-weight').innerText = o.weight;
+        document.getElementById('receipt-delivery').innerText = this.formatPeso(o.deliveryFee);
+        document.getElementById('receipt-discount').innerText = this.formatPeso(o.discount);
+        document.getElementById('receipt-total').innerText = this.formatPeso(o.totalAmount);
+        document.getElementById('receipt-paid').innerText = this.formatPeso(o.amountPaid);
+        document.getElementById('receipt-balance').innerText = this.formatPeso(o.outstandingBalance);
+
+        window.print();
+    }
+
+    // UI UTILITIES
+    openModal(id) {
+        document.getElementById(id).classList.add('active');
+    }
+
+    closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<i data-lucide="info" style="width:16px;"></i> ${msg}`;
+        document.getElementById('toast-container').appendChild(toast);
+        lucide.createIcons();
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    getLaundryBadgeClass(status) {
+        switch(status) {
+            case 'Received': return 'badge-received';
+            case 'Processing': return 'badge-processing';
+            case 'Ready': return 'badge-ready';
+            case 'Released': return 'badge-released';
+            default: return '';
+        }
+    }
+
+    getPaymentBadgeClass(status) {
+        switch(status) {
+            case 'Unpaid': return 'badge-unpaid';
+            case 'Partially paid': return 'badge-partial';
+            case 'Paid': return 'badge-paid';
+            default: return '';
+        }
+    }
+
+    formatPeso(val) {
+        return `₱${val.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    escapeHTML(str) {
+        return str.replace(/[&<>'"]/g, 
+            tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+        );
+    }
+}
+
+// Global App Initialization
+let app;
+window.onload = () => {
+    app = new LaundryApp();
+};
+</script>
+</body>
+</html>
